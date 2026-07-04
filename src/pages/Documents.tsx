@@ -60,7 +60,8 @@ export const Documents: React.FC = () => {
     try {
       triggerToast('info', 'Download', `Preparing "${doc.name}"...`);
       const token = localStorage.getItem('titus_auth_token');
-      const res = await fetch(`/api/v1/jobs/${doc.id}/download`, {
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${API_BASE}/api/v1/jobs/${doc.id}/download`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!res.ok) throw new Error('Download failed');

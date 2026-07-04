@@ -356,7 +356,8 @@ export const Upload: React.FC = () => {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      const res = await fetch("/api/v1/jobs/", {
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${API_BASE}/api/v1/jobs/`, {
         method: "POST",
         headers,
         body: JSON.stringify(jobPayload)
@@ -378,7 +379,7 @@ export const Upload: React.FC = () => {
         uploadHeaders["Authorization"] = `Bearer ${token}`;
       }
 
-      const uploadRes = await fetch(`/api/v1/job-files/upload/${jobId}`, {
+      const uploadRes = await fetch(`${API_BASE}/api/v1/job-files/upload/${jobId}`, {
         method: "POST",
         headers: uploadHeaders,
         body: formData
@@ -386,7 +387,7 @@ export const Upload: React.FC = () => {
       if (!uploadRes.ok) throw new Error("Failed to upload files.");
 
       // 3. Trigger OCR Processing in Background
-      const processRes = await fetch(`/api/v1/jobs/${jobId}/process`, {
+      const processRes = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/process`, {
         method: "POST",
         headers: uploadHeaders
       });

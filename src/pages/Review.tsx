@@ -1023,7 +1023,8 @@ export const Review: React.FC = () => {
 
       // Use raw fetch for download so we can access the blob + headers
       const token = localStorage.getItem('titus_auth_token');
-      const res = await fetch(`/api/v1/jobs/${jobId}/download`, {
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/download`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!res.ok) throw new Error('Failed to download document.');

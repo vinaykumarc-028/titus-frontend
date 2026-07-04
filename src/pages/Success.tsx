@@ -64,7 +64,8 @@ export const Success: React.FC = () => {
 
     try {
       const token = localStorage.getItem('titus_auth_token');
-      const res = await fetch(`/api/v1/jobs/${jobId}/download?include_answers=${includeAI}`, {
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/download?include_answers=${includeAI}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
