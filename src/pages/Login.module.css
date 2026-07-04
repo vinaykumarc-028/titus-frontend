@@ -1,0 +1,197 @@
+.loginWrapper {
+  min-height: 100vh;
+  display: flex;
+  background-color: var(--bg-app);
+}
+
+.leftPane {
+  flex: 1;
+  background-color: var(--primary);
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-64);
+  position: relative;
+  overflow: hidden;
+}
+
+.leftPane::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+
+.brandContainer {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+}
+
+.brandLogo {
+  margin-bottom: var(--space-32);
+  display: inline-flex;
+  background: rgba(255,255,255,0.1);
+  padding: var(--space-16);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(10px);
+}
+
+.brandTitle {
+  font-size: var(--text-display);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: var(--space-16);
+  color: #FFFFFF;
+}
+
+.brandDescription {
+  font-size: var(--text-h5);
+  font-weight: 400;
+  opacity: 0.9;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.9);
+}
+
+.rightPane {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-24);
+  background-color: var(--bg-app);
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 440px;
+  padding: var(--space-20) !important;
+  box-shadow: var(--shadow-dialog) !important;
+  border: none !important;
+}
+
+.cardHeader {
+  margin-bottom: var(--space-16);
+  text-align: center;
+}
+
+.cardTitle {
+  font-size: var(--text-h3);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-8);
+}
+
+.cardSubtitle {
+  font-size: var(--text-small);
+  color: var(--text-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-14);
+}
+
+.forgotPassword {
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.forgotPassword:hover {
+  text-decoration: underline;
+}
+
+.optionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.errorMessage {
+  background-color: var(--bg-danger);
+  color: var(--danger);
+  padding: var(--space-12);
+  border-radius: var(--radius-input);
+  font-size: var(--text-small);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  animation: slideIn 200ms ease-out;
+}
+
+.passwordToggle {
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-button);
+}
+
+.passwordToggle:hover {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+}
+
+@media (max-width: 1024px) {
+  .leftPane {
+    display: none;
+  }
+}
+
+.signupFooter {
+  text-align: center;
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+  margin-top: var(--space-10);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-8);
+}
+
+.toggleLink {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  margin-left: 4px;
+}
+
+.toggleLink:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,39 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Variants */
+.blue   { background: var(--bg-info);    color: var(--text-info);    border: 1px solid var(--border-info); }
+.green  { background: var(--bg-success); color: var(--text-success); border: 1px solid var(--border-success); }
+.amber  { background: var(--bg-amber);   color: var(--text-amber);   border: 1px solid var(--border-amber); }
+.red    { background: var(--bg-danger);  color: var(--text-danger);  border: 1px solid var(--border-danger); }
+.gray   { background: var(--surface-2);  color: var(--text-muted);   border: 1px solid var(--border); }
+.purple { background: var(--bg-purple);  color: var(--accent-purple); border: 1px solid rgba(124,58,237,0.2); }
+.outline { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-strong); }
+
+/* Dot colors */
+.dot_blue   { background: var(--dot-processing); animation: dotBlink 1.5s ease-in-out infinite; }
+.dot_green  { background: var(--dot-completed); }
+.dot_amber  { background: var(--dot-review); animation: dotBlink 1.5s ease-in-out infinite; }
+.dot_red    { background: var(--dot-failed); }
+.dot_gray   { background: var(--text-muted); }
+
+@keyframes dotBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}

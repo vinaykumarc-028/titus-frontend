@@ -1,0 +1,277 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: var(--space-48);
+}
+
+.header {
+  margin-bottom: var(--space-32);
+}
+
+.title {
+  font-size: var(--text-h2);
+  margin-bottom: var(--space-8);
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.settingsLayout {
+  display: flex;
+  gap: var(--space-32);
+  align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+  .settingsLayout {
+    flex-direction: column;
+    gap: var(--space-24);
+  }
+  .sidebar {
+    width: 100% !important;
+    flex-direction: row !important;
+    overflow-x: auto;
+    padding-bottom: var(--space-8);
+  }
+}
+
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-button);
+  color: var(--text-secondary);
+  font-size: var(--text-small);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+  background: transparent;
+  border: none;
+  text-align: left;
+}
+
+.navItem:hover {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.navItem.active {
+  background-color: var(--bg-info);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.content {
+  flex: 1;
+  width: 100%;
+}
+
+.sectionCard {
+  padding: var(--space-32);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  margin-bottom: var(--space-24);
+  padding-bottom: var(--space-16);
+  border-bottom: 1px solid var(--border);
+}
+
+.sectionTitle {
+  font-size: var(--text-h4);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Form Styles */
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin-bottom: var(--space-20);
+  max-width: 480px;
+}
+
+.formLabel {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.input {
+  padding: var(--space-10) var(--space-14);
+  font-size: var(--text-small);
+  border-radius: var(--radius-input);
+  border: 1px solid var(--border);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  width: 100%;
+  transition: border-color 150ms ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.switchRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-16) 0;
+  border-bottom: 1px solid var(--divider);
+  max-width: 600px;
+}
+
+.switchRow:last-of-type {
+  border-bottom: none;
+}
+
+.switchLabelBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.switchTitle {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.switchDesc {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+/* Radio Cards (Theme Options) */
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-16);
+  max-width: 480px;
+  margin-top: var(--space-8);
+}
+
+.themeCard {
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-12);
+  cursor: pointer;
+  transition: all 200ms ease;
+  background-color: var(--bg-app);
+}
+
+.themeCard:hover {
+  border-color: var(--text-secondary);
+}
+
+.themeCardActive {
+  border-color: var(--primary);
+  background-color: var(--surface-selected) !important;
+  box-shadow: var(--shadow-selected);
+  transform: scale(1.01);
+  position: relative;
+}
+
+.themeCardActive::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--primary);
+  border-top-left-radius: 11px;
+  border-bottom-left-radius: 11px;
+}
+
+.themePreview {
+  width: 100%;
+  height: 60px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.themeLabel {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Key-Value Lists */
+.metaGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  max-width: 480px;
+  background-color: var(--bg-app);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-20);
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-small);
+}
+
+.metaLabel {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.metaValue {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Help Links */
+.helpGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  max-width: 400px;
+}
+
+.helpLinkCard {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: var(--space-14) var(--space-16);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: var(--text-small);
+  font-weight: 500;
+  background-color: var(--bg-card);
+  transition: all 150ms ease;
+}
+
+.helpLinkCard:hover {
+  border-color: var(--primary);
+  background-color: var(--bg-app);
+  color: var(--primary);
+}

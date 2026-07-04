@@ -1,0 +1,270 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.header { display: flex; flex-direction: column; gap: 2px; }
+.title  { font-size: var(--text-24); font-weight: var(--font-bold); color: var(--text-primary); }
+.subtitle { font-size: var(--text-13); color: var(--text-muted); margin: 0; }
+
+/* Three-column workspace */
+.workspace {
+  display: grid;
+  grid-template-columns: 220px 1fr 260px;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .workspace { grid-template-columns: 1fr 1fr; }
+  .logsCard  { grid-column: span 2; }
+}
+
+@media (max-width: 700px) {
+  .workspace { grid-template-columns: 1fr; }
+  .logsCard  { grid-column: auto; }
+}
+
+/* Shared card */
+.stagesCard, .progressCard, .logsCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-10);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+
+.cardHeader {
+  font-size: var(--text-12);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.etaLabel {
+  font-size: var(--text-12);
+  color: var(--text-secondary);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: var(--font-medium);
+}
+
+/* Stage list */
+.stageList {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5) var(--space-4);
+}
+
+.stage {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.stageConnector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.stageIcon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.stageLine {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+  margin: 2px 0;
+}
+
+/* Stage status variants */
+.done .stageIcon   { background: var(--bg-success); border-color: var(--border-success); color: var(--success); }
+.active .stageIcon { background: var(--primary-subtle); border-color: var(--primary-muted); color: var(--primary); }
+.error .stageIcon  { background: var(--bg-danger); border-color: var(--border-danger); color: var(--danger); }
+
+.stageBody {
+  padding-bottom: var(--space-5);
+  flex: 1;
+  min-width: 0;
+}
+
+.stageLabel {
+  font-size: var(--text-13);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  line-height: 22px;
+}
+
+.waiting .stageLabel  { color: var(--text-muted); }
+.done .stageLabel     { color: var(--text-primary); }
+
+.stageDetail {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* Spinners */
+.spinDot {
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 600ms linear infinite;
+}
+
+.emptyDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Progress card */
+.progressSection {
+  padding: var(--space-6) var(--space-6) var(--space-4);
+}
+
+.progressStats {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.progressPct {
+  font-size: var(--text-32);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.pagesStat {
+  font-size: var(--text-13);
+  color: var(--text-muted);
+}
+
+.progressTrack {
+  height: 6px;
+  background: var(--surface-3);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: var(--radius-full);
+  transition: width 600ms ease;
+}
+
+.fillDone  { background: var(--success); }
+.fillError { background: var(--danger); }
+
+/* Page grid */
+.pageGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--border);
+}
+
+.pageBar {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-2);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  transition: background 300ms ease;
+}
+
+.pageBarDone   { background: var(--primary); border-color: var(--primary); }
+.pageBarActive { background: var(--primary-muted); border-color: var(--primary); animation: pagePulse 1s ease-in-out infinite; }
+
+@keyframes pagePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border-top: 1px solid var(--border);
+}
+
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 var(--space-6) var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-danger);
+  border: 1px solid var(--border-danger);
+  border-radius: var(--radius-6);
+  color: var(--text-danger);
+  font-size: var(--text-12);
+}
+
+/* Logs */
+.logsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: var(--space-3);
+  height: 220px;
+  overflow-y: auto;
+  background: #0B0F1A;
+  font-family: var(--font-mono);
+}
+
+.logLine {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-size: 11px;
+  color: #94A3B8;
+  padding: 1px 0;
+}
+
+.logIdx {
+  color: #334155;
+  min-width: 20px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.logCursor {
+  animation: blink 1s step-end infinite;
+  color: var(--primary);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}

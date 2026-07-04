@@ -1,0 +1,245 @@
+.wrapper {
+  animation: fadeIn 300ms ease-out;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: var(--space-24);
+}
+
+.title {
+  font-size: var(--text-h3);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: var(--text-body);
+}
+
+.select {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  background-color: var(--bg-card);
+  font-size: var(--text-small);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-24);
+  margin-bottom: var(--space-24);
+}
+
+.metricCard {
+  padding: var(--space-20) !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.metricHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-12);
+}
+
+.metricLabel {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.metricIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metricValue {
+  font-size: var(--text-h2);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.metricTrendWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-caption);
+}
+
+.trendUp {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.trendDown {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.trendLabel {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-24);
+}
+
+@media (max-width: 1024px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chartCard {
+  padding: var(--space-24) !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.chartHeader {
+  margin-bottom: var(--space-24);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-12);
+}
+
+.chartTitle {
+  font-size: var(--text-h5);
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+/* Mock Bar Chart */
+.barChartContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 320px;
+  padding-top: var(--space-32);
+  flex: 1;
+}
+
+.barColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  height: 100%;
+  flex: 1;
+}
+
+.barWrapper {
+  flex: 1;
+  width: 40px;
+  background-color: var(--bg-app);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+@media (max-width: 768px) {
+  .barWrapper {
+    width: 20px;
+  }
+}
+
+.bar {
+  width: 100%;
+  background-color: var(--primary);
+  border-radius: 4px 4px 0 0;
+  transition: height 1s ease-out;
+}
+
+.barValue {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.barLabel {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Category Progress Bars */
+.categoryList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-20);
+  flex: 1;
+}
+
+.categoryItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.catInfo {
+  width: 120px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.catDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.catName {
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.catProgressWrapper {
+  flex: 1;
+  height: 8px;
+  background-color: var(--bg-app);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.catProgressBar {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.catPercentage {
+  width: 40px;
+  text-align: right;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--text-secondary);
+}

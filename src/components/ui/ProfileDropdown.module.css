@@ -1,0 +1,109 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 240px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-dropdown);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 200ms ease-out;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: var(--space-16);
+  border-bottom: 1px solid var(--border);
+  gap: var(--space-12);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--bg-info);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.userInfo {
+  flex: 1;
+  overflow: hidden;
+}
+
+.name {
+  font-weight: 600;
+  font-size: var(--text-small);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.body {
+  padding: var(--space-8) 0;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-8) var(--space-16);
+  gap: var(--space-12);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-small);
+  color: var(--text-primary);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+
+.menuItem:hover {
+  background-color: var(--bg-app);
+}
+
+.menuItem:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--border);
+  margin: var(--space-8) 0;
+}
+
+.logout {
+  color: var(--danger);
+}
+
+.logout:hover {
+  background-color: var(--bg-danger);
+}
+
+.logout:focus-visible {
+  outline: 2px solid var(--danger);
+  outline-offset: -2px;
+}

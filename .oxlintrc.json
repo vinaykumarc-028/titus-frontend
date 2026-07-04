@@ -1,0 +1,38 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+
+  "plugins": [
+    "import",
+    "jest",
+    "jsx-a11y",
+    "react",
+    "react-perf",
+    "typescript",
+    "unicorn"
+  ],
+  "rules": {
+    // Phase 7 & 9: Import & Codebase Cleanup
+    "no-unused-vars": [
+      "warn",
+      { "args": "none", "ignoreRestSiblings": true, "caughtErrors": "none" }
+    ],
+    "import/no-duplicates": "error",
+    "unicorn/no-useless-undefined": "warn",
+    "no-debugger": "error",
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    // Phase 6: Accessibility
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/anchor-is-valid": "error",
+    "jsx-a11y/aria-props": "error",
+    "jsx-a11y/aria-role": ["error", { "ignoreNonDOM": true }],
+    "jsx-a11y/label-has-associated-control": "error",
+
+    // General Code Quality & Performance
+    "react/jsx-key": ["error", { "checkFragmentShorthand": true }],
+    "react/no-danger": "warn",
+    "react/self-closing-comp": "warn",
+    "react-perf/jsx-no-new-object-as-prop": "warn",
+    "react-perf/jsx-no-new-array-as-prop": "warn",
+    "react-perf/jsx-no-new-function-as-prop": "warn"
+  }
+}

@@ -1,0 +1,160 @@
+/* App Shell layout */
+
+.shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.mainColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: margin-left 200ms ease;
+  margin-left: var(--sidebar-width);
+  height: 100vh;
+  overflow: hidden;
+}
+
+.mainColumn.sidebarCollapsed {
+  margin-left: var(--sidebar-collapsed);
+}
+
+.topbar {
+  height: var(--topbar-height);
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-8);
+  gap: var(--space-4);
+  flex-shrink: 0;
+  z-index: 50;
+}
+
+.topbarLeft {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.pageTitle {
+  font-size: var(--text-14);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-13);
+  color: var(--text-muted);
+}
+
+.breadcrumbSep {
+  color: var(--border-strong);
+}
+
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.topbarBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background 150ms ease, color 150ms ease;
+  position: relative;
+}
+
+.topbarBtn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.notifDot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  border: 1px solid var(--bg-header);
+}
+
+.topbarDivider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 var(--space-2);
+}
+
+.userChip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 8px 4px 4px;
+  border-radius: var(--radius-6);
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.userChip:hover { background: var(--surface-hover); }
+
+.userChipAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  color: white;
+}
+
+.userChipName {
+  font-size: var(--text-13);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+/* Main content area */
+.contentArea {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-app);
+}
+
+.pageContent {
+  padding: var(--space-8) var(--space-10);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  min-height: 100%;
+}
+
+/* Full-width pages (review) */
+.pageContentFull {
+  padding: 0;
+  max-width: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
