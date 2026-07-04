@@ -177,74 +177,176 @@ function structuredPageToHtml(structuredPage: any): string {
   const blocks = structuredPage.blocks;
   
   const result: string[] = [];
-  
-  blocks.forEach((block: any) => {
-    const marker = block.marker ? `<span class="marker" style="font-weight: bold; margin-right: 8px;">${block.marker}</span>` : '';
-    const marks = block.marks?.raw ? `<strong class="marks" style="float: right; margin-left: 8px; font-size: 12px; color: var(--text-muted);">${block.marks.raw}</strong>` : '';
-    const cleanedText = block.text || '';
-    
-    // Process text
-    let processedText = cleanedText;
-    
-    // Protect low confidence spans
-    const confidenceSpans: string[] = [];
-    processedText = processedText.replace(/<span\s+class=["']low-confidence["']\s+data-confidence=["'](\d+)["']>(.*?)<\/span>/gi, (_match: string, conf: string, text: string) => {
-      confidenceSpans.push(`<span class="low-confidence-highlight" style="border-bottom: 2px dashed #f59e0b; background-color: rgba(245, 158, 11, 0.08); cursor: help;" title="Confidence: ${conf}%" data-confidence="${conf}">${text}</span>`);
-      return `__CONF_SPAN_${confidenceSpans.length - 1}__`;
+
+  // Badge configs for element types
+  const typeBadgeMap: Record<string, { label: string; color: string }> = {
+    question:           { label: 'Q',         color: '#3b82f6' },
+    sub_question:       { label: 'Sub-Q',     color: '#6366f1' },
+    option:             { label: 'MCQ',        color: '#8b5cf6' },
+    section:            { label: 'Section',    color: '#10b981' },
+    subsection:         { label: 'Sub §',      color: '#14b8a6' },
+    instruction:        { label: 'Instr',      color: '#f59e0b' },
+    question_group:     { label: 'Group',      color: '#6b7280' },
+    paragraph:          { label: 'Para',       color: '#9ca3af' },
+    header:             { label: 'Header',     color: '#10b981' },
+    footer:             { label: 'Footer',     color: '#9ca3af' },
+    mark_allocation:    { label: 'Marks',      color: '#ef4444' },
+    match_row:          { label: 'Match',      color: '#f97316' },
+    table:              { label: 'Table',      color: '#0ea5e9' },
+    page_break:         { label: 'Page Brk',  color: '#6b7280' },
+  };
+
+  // Question type labels
+  const qTypeLabelMap: Record<string, string> = {
+    fill_blank:           '✏️ Fill Blank',
+    true_false:           '✅ T/F',
+    assertion_reason:     '🔗 A/R',
+    case_study:           '📖 Case',
+    match_the_following:  '🔀 Match',
+    mcq:                  '☑️ MCQ',
+    diagram:              '📐 Diagram',
+    programming:          '💻 Code',
+    mathematical:         '📐 Math',
+    long_answer:          '📝 Long',
+    short_answer:         '📝 Short',
+  };
+
+  let inMatchTable = false;
+  let matchTableRows: [string, string][] = [];
+
+  const flushMatchTable = () => {
+    if (!inMatchTable || matchTableRows.length === 0) { inMatchTable = false; return; }
+    let html = '<table class="match-table" style="width:100%;border-collapse:collapse;margin:8px 0;">';
+    html += '<thead><tr><th style="padding:6px 10px;border:1px solid var(--border);background:var(--surface-raised);text-align:left;">Column A</th><th style="padding:6px 10px;border:1px solid var(--border);background:var(--surface-raised);text-align:left;">Column B</th></tr></thead><tbody>';
+    matchTableRows.forEach(([a, b]) => {
+      html += `<tr><td style="padding:6px 10px;border:1px solid var(--border);">${a}</td><td style="padding:6px 10px;border:1px solid var(--border);">${b}</td></tr>`;
     });
-    
-    // Escape HTML special characters
+    html += '</tbody></table>';
+    result.push(html);
+    inMatchTable = false;
+    matchTableRows = [];
+  };
+
+  blocks.forEach((block: any) => {
+    const blockType = block.type || 'question';
+
+    // Flush match table if we're done with match rows
+    if (blockType !== 'match_row' && inMatchTable) {
+      flushMatchTable();
+    }
+
+    // ── Page break ──────────────────────────────────────
+    if (blockType === 'page_break') {
+      result.push(`<div class="explicit-page-break" data-block-id="${block.id}" style="page-break-after:always;break-after:page;border-top:1px dashed var(--border);margin:24px 0;text-align:center;color:var(--text-muted);font-size:11px;user-select:none;" contenteditable="false">--- Print Page Break ---</div>`);
+      return;
+    }
+
+    // ── Match rows → accumulate into a table ───────────
+    if (blockType === 'match_row') {
+      inMatchTable = true;
+      matchTableRows.push([block.match_column_a || block.text || '', block.match_column_b || '']);
+      return;
+    }
+
+    // Process text with confidence span protection
+    const confidenceSpans: string[] = [];
+    let processedText = (block.text || '').replace(
+      /<span\s+class=["']low-confidence["']\s+data-confidence=["'](\d+)["']>(.*?)<\/span>/gi,
+      (_match: string, conf: string, text: string) => {
+        confidenceSpans.push(`<span class="low-confidence-highlight" style="border-bottom:2px dashed #f59e0b;background-color:rgba(245,158,11,0.08);cursor:help;" title="Confidence: ${conf}%" data-confidence="${conf}">${text}</span>`);
+        return `__CONF_SPAN_${confidenceSpans.length - 1}__`;
+      }
+    );
+
+    // Escape HTML
     processedText = processedText
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
-      
-    // Restore protected confidence spans
-    processedText = processedText.replace(/__CONF_SPAN_(\d+)__/g, (_match: string, idx: string) => {
-      return confidenceSpans[Number(idx)];
-    });
-    
-    // Convert basic inline formats (**bold**, *italic*)
+
+    // Restore spans
+    processedText = processedText.replace(/__CONF_SPAN_(\d+)__/g, (_match: string, idx: string) => confidenceSpans[Number(idx)]);
+
+    // Inline markdown
     processedText = processedText
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-    if (block.type === 'section') {
-      result.push(`<h1 data-block-id="${block.id}">${processedText}</h1>`);
-    } else if (block.type === 'subsection') {
-      result.push(`<h2 data-block-id="${block.id}">${processedText}</h2>`);
-    } else if (block.type === 'instruction') {
-      result.push(`<p class="instruction" data-block-id="${block.id}" style="font-style: italic; color: var(--text-muted);">${processedText}</p>`);
-    } else if (block.type === 'question' || block.type === 'sub_question' || block.type === 'mcq') {
-      result.push(`<p class="question" data-block-id="${block.id}">${marks}${marker}<span>${processedText}</span></p>`);
-    } else if (block.type === 'option') {
-      result.push(`<p class="option" data-block-id="${block.id}" style="padding-left: 24px;">${marker}<span>${processedText}</span></p>`);
-    } else if (block.type === 'table' && block.table?.rows) {
-      let tableHtml = `<table border="1" data-block-id="${block.id}" style="width:100%; border-collapse:collapse; margin:12px 0;">`;
+    // Fill-blank underscores → styled blanks
+    if (block.has_fill_blank) {
+      processedText = processedText.replace(/_{3,}/g, '<span style="display:inline-block;min-width:60px;border-bottom:2px solid currentColor;"> </span>');
+    }
+
+    // Build badges
+    const badgeConf = typeBadgeMap[blockType];
+    const badge = badgeConf
+      ? `<span class="el-type-badge" style="display:inline-block;font-size:10px;font-weight:600;padding:1px 5px;border-radius:3px;margin-right:6px;background:${badgeConf.color}22;color:${badgeConf.color};border:1px solid ${badgeConf.color}44;user-select:none;vertical-align:middle;">${badgeConf.label}</span>`
+      : '';
+
+    // Question type pill
+    const qtLabel = block.question_type ? qTypeLabelMap[block.question_type] : null;
+    const qtBadge = qtLabel
+      ? `<span style="display:inline-block;font-size:10px;padding:1px 5px;border-radius:10px;margin-right:6px;background:rgba(99,102,241,0.12);color:#6366f1;user-select:none;vertical-align:middle;">${qtLabel}</span>`
+      : '';
+
+    // Marker
+    const marker = block.marker ? `<span class="marker" style="font-weight:700;margin-right:6px;color:var(--text-primary);">${block.marker}</span>` : '';
+
+    // Marks allocation
+    const marksRaw = block.marks?.raw || null;
+    const marksHtml = marksRaw
+      ? `<span class="marks" style="float:right;font-size:11px;font-weight:600;color:var(--accent);background:rgba(59,130,246,0.1);padding:2px 6px;border-radius:4px;margin-left:8px;">[${marksRaw}]</span>`
+      : '';
+
+    // Hierarchy indentation
+    const level = block.hierarchy_level || 0;
+    const indent = level > 0 ? `padding-left: ${level * 24}px;` : '';
+
+    // ── Render by type ──────────────────────────────────
+    if (blockType === 'section') {
+      result.push(`<h1 data-block-id="${block.id}">${badge}${processedText}</h1>`);
+    } else if (blockType === 'subsection') {
+      result.push(`<h2 data-block-id="${block.id}">${badge}${processedText}</h2>`);
+    } else if (blockType === 'header') {
+      result.push(`<p class="header-line" data-block-id="${block.id}" style="font-weight:600;border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:4px;">${badge}${processedText}</p>`);
+    } else if (blockType === 'footer') {
+      result.push(`<p class="footer-line" data-block-id="${block.id}" style="font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:4px;">${badge}${processedText}</p>`);
+    } else if (blockType === 'instruction') {
+      result.push(`<p class="instruction" data-block-id="${block.id}" style="font-style:italic;color:var(--text-muted);${indent}">${badge}${processedText}</p>`);
+    } else if (blockType === 'question' || blockType === 'question_group') {
+      result.push(`<p class="question" data-block-id="${block.id}" style="${indent}">${marksHtml}${badge}${qtBadge}${marker}<span>${processedText}</span></p>`);
+    } else if (blockType === 'sub_question') {
+      result.push(`<p class="question sub-question" data-block-id="${block.id}" style="${indent}">${marksHtml}${badge}${qtBadge}${marker}<span>${processedText}</span></p>`);
+    } else if (blockType === 'option') {
+      result.push(`<p class="option" data-block-id="${block.id}" style="${indent || 'padding-left:24px;'}">${badge}${marker}<span>${processedText}</span></p>`);
+    } else if (blockType === 'mark_allocation') {
+      result.push(`<p class="mark-allocation" data-block-id="${block.id}" style="text-align:right;font-size:12px;font-weight:600;color:var(--accent);">${badge}${processedText}</p>`);
+    } else if (blockType === 'table' && block.table?.rows) {
+      let tableHtml = `<table border="1" data-block-id="${block.id}" style="width:100%;border-collapse:collapse;margin:12px 0;">`;
       block.table.rows.forEach((row: any, rowIdx: number) => {
         tableHtml += '<tr>';
         (row.cells || []).forEach((cell: any) => {
           const tag = cell.header || rowIdx === 0 ? 'th' : 'td';
-          tableHtml += `<${tag} style="padding:8px; border:1px solid var(--border);">${cell.text || ''}</${tag}>`;
+          tableHtml += `<${tag} style="padding:8px;border:1px solid var(--border);">${cell.text || ''}</${tag}>`;
         });
         tableHtml += '</tr>';
       });
       tableHtml += '</table>';
       result.push(tableHtml);
-    } else if (block.type === 'match_following' && block.match_pairs) {
-      let tableHtml = `<table class="match-table" data-block-id="${block.id}" style="width:100%; border-collapse:collapse; margin:12px 0;">`;
-      tableHtml += '<tbody>';
+    } else if (blockType === 'match_following' && block.match_pairs) {
+      let tableHtml = `<table class="match-table" data-block-id="${block.id}" style="width:100%;border-collapse:collapse;margin:12px 0;"><tbody>`;
       block.match_pairs.forEach((pair: any) => {
-        tableHtml += `<tr><td style="padding:8px; border:1px solid var(--border);">${pair.left || ''}</td><td style="padding:8px; border:1px solid var(--border);">${pair.right || ''}</td></tr>`;
+        tableHtml += `<tr><td style="padding:8px;border:1px solid var(--border);">${pair.left||''}</td><td style="padding:8px;border:1px solid var(--border);">${pair.right||''}</td></tr>`;
       });
       tableHtml += '</tbody></table>';
       result.push(tableHtml);
-    } else if (block.type === 'page_break') {
-      result.push(`<div class="explicit-page-break" data-block-id="${block.id}" style="page-break-after: always; break-after: page; border-top: 1px dashed var(--border); margin: 24px 0; text-align: center; color: var(--text-muted); font-size: 11px; user-select: none;" contenteditable="false">--- Print Page Break ---</div>`);
     } else {
-      result.push(`<p data-block-id="${block.id}">${processedText}</p>`);
+      result.push(`<p data-block-id="${block.id}" style="${indent}">${badge}${processedText}</p>`);
     }
   });
+
+  // Flush any remaining match table
+  flushMatchTable();
   
   return result.join('\n');
 }
