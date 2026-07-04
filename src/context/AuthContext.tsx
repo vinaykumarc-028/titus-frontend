@@ -21,6 +21,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const TOKEN_KEY = 'titus_auth_token';
 const USER_KEY  = 'titus_auth_user';
+const API_BASE  = import.meta.env.VITE_API_URL || '';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken]     = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
@@ -33,7 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // On mount, if we have a token verify it is still valid
   useEffect(() => {
     if (!token) return;
-    fetch('/api/v1/auth/me', {
+    fetch(`${API_BASE}/api/v1/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => {
@@ -56,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/v1/auth/login', {
+      const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -70,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { access_token } = await res.json();
 
       // Fetch user profile
-      const meRes = await fetch('/api/v1/auth/me', {
+      const meRes = await fetch(`${API_BASE}/api/v1/auth/me`, {
         headers: { Authorization: `Bearer ${access_token}` },
       });
       if (!meRes.ok) return { success: false, error: 'Failed to load user profile.' };
