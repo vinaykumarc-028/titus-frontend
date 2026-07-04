@@ -28,7 +28,8 @@ export const LoginDocument: React.FC = () => {
 
     if (isRegistering) {
       try {
-        const res = await fetch('/api/v1/auth/register', {
+        const API_BASE = import.meta.env.VITE_API_URL || '';
+        const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
