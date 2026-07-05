@@ -340,6 +340,13 @@ function structuredPageToHtml(structuredPage: any): string {
       });
       tableHtml += '</tbody></table>';
       result.push(tableHtml);
+    } else if (blockType === 'shape') {
+      const shapeType = (block.content || block.text || '').toLowerCase();
+      const shapeSize = (block.size || 'medium').toLowerCase();
+      const shapeClassType = shapeType === 'box' ? 'rectangle' : shapeType;
+      result.push(`<div class="shape-container" data-block-id="${block.id}" style="margin:16px 0;display:flex;justify-content:center;">
+        <div class="shape-element shape-type-${shapeClassType} shape-size-${shapeSize}" title="${shapeType} (${shapeSize})" contenteditable="false"></div>
+      </div>`);
     } else {
       result.push(`<p data-block-id="${block.id}" style="${indent}">${badge}${processedText}</p>`);
     }
