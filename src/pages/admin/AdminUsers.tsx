@@ -36,7 +36,6 @@ export const AdminUsers: React.FC = () => {
 
   // Confirm dialog
   const [pendingAction, setPendingAction] = useState<{ type: ActionType; user: UserItem } | null>(null);
-  const [actionLoading, setActionLoading] = useState(false);
 
   // Create / Edit form
   const [showForm, setShowForm]   = useState(false);
@@ -115,7 +114,6 @@ export const AdminUsers: React.FC = () => {
 
   const executeAction = async () => {
     if (!pendingAction) return;
-    setActionLoading(true);
     const { type, user } = pendingAction;
     try {
       if (type === 'delete') {
@@ -137,7 +135,6 @@ export const AdminUsers: React.FC = () => {
     } catch {
       triggerToast('error', 'Error', `Failed to ${type} user.`);
     } finally {
-      setActionLoading(false);
       setPendingAction(null);
     }
   };
