@@ -1172,21 +1172,10 @@ export const Review: React.FC = () => {
       syncEditorContent();
       if (activePage) await triggerSave(activePage);
 
-      // Use raw fetch for download so we can access the blob + headers
-      const token = localStorage.getItem('titus_auth_token');
-      const API_BASE = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/download`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) throw new Error('Failed to download document.');
-
-      const filename = filenameFromContentDisposition(res.headers.get('content-disposition'));
-      const htmlBlob = await res.blob();
-      downloadBlob(htmlBlob, filename || 'TITUS_Document.html');
       setSaveStatus('Saved');
-      triggerToast('success', 'HTML Export Ready', `Downloaded ${filename || 'document'}.`);
+      triggerToast('success', 'Review Completed', `Structuring document...`);
 
-      // Also mark complete
+      // Mark complete and structure
       await api.post(`/jobs/${jobId}/complete`);
       navigate('/success');
     } catch (err: any) {
