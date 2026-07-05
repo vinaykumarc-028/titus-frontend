@@ -963,13 +963,22 @@ export const Review: React.FC = () => {
     };
   }, [syncScroll, activePageNum, devTab]);
 
+  const handleManualSave = async () => {
+    setSaveStatus('Saving...');
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    const updated = syncEditorContent();
+    await triggerSave(updated || activePage);
+    setSaveStatus('Saved');
+    triggerToast('success', 'Changes Saved', 'Your edits were saved successfully.');
+  };
+
   // ── Keyboard Shortcuts (ctrl+s, ctrl+z, ctrl+shift+z, alt+left, alt+right) ──
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ctrl + S (Save)
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        triggerSave();
+        handleManualSave();
       }
       // Alt + Right (Next page)
       if (e.altKey && e.key === 'ArrowRight') {
@@ -996,26 +1005,28 @@ export const Review: React.FC = () => {
     const pageToSave = pageOverride || activePage;
     if (!pageToSave) return;
     const structuredPage = pageToSave.structured_page || null;
+    const currentHtml = editorRef.current?.innerHTML || pageToSave.edited_html || '';
+
+    // Safety check: preserve elements if pageToSave.elements happens to be empty
+    const elementsToSend = (pageToSave.elements && pageToSave.elements.length > 0)
+      ? pageToSave.elements
+      : (activePage?.elements || []);
+
     try {
       await api.put(`/jobs/${jobId}/pages/${pageToSave.page_number}`, {
-          markdown: pageToSave.markdown || '',
-          elements: pageToSave.elements || [],
-          structured_page: structuredPage,
-          edited_html: editorRef.current?.innerHTML || '',
-        });
-        setSaveStatus('Saved');
-        
-        if (pageToSave.elements.length === 0) {
-          const data = await api.get<any>(`/jobs/${jobId}`);
-          setJob(data);
-          setPages(data.pages || []);
-        } else {
-          setPages(prev =>
-            prev.map(p =>
-              p.page_number === pageToSave.page_number ? pageToSave : p
-            )
-          );
-        }
+        markdown: pageToSave.markdown || '',
+        elements: elementsToSend,
+        structured_page: structuredPage,
+        edited_html: currentHtml,
+      });
+      setSaveStatus('Saved');
+      setPages(prev =>
+        prev.map(p =>
+          p.page_number === pageToSave.page_number
+            ? { ...p, elements: elementsToSend, edited_html: currentHtml }
+            : p
+        )
+      );
     } catch {
       setSaveStatus('Changes Auto Saved');
     }
@@ -1358,7 +1369,7 @@ export const Review: React.FC = () => {
           </button>
 
           <div className={styles.headerRightActions}>
-            <Button variant="secondary" size="sm" icon={<Save size={12} />} onClick={() => triggerSave()}>Save</Button>
+            <Button variant="secondary" size="sm" icon={<Save size={12} />} onClick={handleManualSave}>Save</Button>
             <Button variant="primary" size="sm" icon={<CheckCircle2 size={12} />} onClick={handleFinish}>Complete Review</Button>
             {!inspectorCollapsed ? (
               <button className={styles.toolBtn} onClick={() => setInspectorCollapsed(true)} title="Hide inspector"><PanelRightClose size={14} /></button>
