@@ -692,37 +692,6 @@ function analyzeHtmlConfidence(html: string): ConfidenceMetrics {
   };
 }
 
-function filenameFromContentDisposition(header: string | null): string {
-  const fallback = 'TITUS_Document.html';
-  if (!header) return fallback;
-
-  const encodedMatch = header.match(/filename\*=UTF-8''([^;]+)/i);
-  if (encodedMatch?.[1]) {
-    try {
-      return decodeURIComponent(encodedMatch[1].replace(/^"|"$/g, '')) || fallback;
-    } catch {
-      return encodedMatch[1].replace(/^"|"$/g, '') || fallback;
-    }
-  }
-
-  const quotedMatch = header.match(/filename="([^"]+)"/i);
-  if (quotedMatch?.[1]) return quotedMatch[1];
-
-  const plainMatch = header.match(/filename=([^;]+)/i);
-  return plainMatch?.[1]?.trim().replace(/^"|"$/g, '') || fallback;
-}
-
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename.endsWith('.html') ? filename : `${filename}.html`;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
-}
-
 // ── Smart Image / PDF Preview ─────────────────────────────
 // Browsers don't send auth headers for <img src> or <iframe src>.
 // Solution: fetch the file as a blob WITH the token, then hand the

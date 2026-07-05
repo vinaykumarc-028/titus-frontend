@@ -435,30 +435,99 @@
 .htmlEditor h1, .htmlEditor h2, .htmlEditor h3 {
   font-weight: 700;
   color: #0F172A;
-  margin-top: var(--space-6);
-  margin-bottom: var(--space-3);
+  margin-top: 24px;
+  margin-bottom: 12px;
   border: none;
+  line-height: 1.4;
 }
 
-.htmlEditor h1 { font-size: 20px; border-bottom: 2px solid #E2E8F0; padding-bottom: 6px; }
-.htmlEditor h2 { font-size: 17px; }
-.htmlEditor h3 { font-size: 15px; }
+.htmlEditor h1 {
+  font-size: 18px;
+  border-bottom: 2px solid #CBD5E1;
+  padding-bottom: 8px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.htmlEditor h2 { font-size: 16px; }
+.htmlEditor h3 { font-size: 14px; }
 
 .htmlEditor p {
-  margin: 0 0 var(--space-4);
-  color: #334155; /* Charcoal paragraph */
+  margin: 0 0 10px;
+  color: #334155;
   font-size: 13.5px;
+  line-height: 1.7;
+}
+
+/* Question blocks */
+.htmlEditor p.question {
+  margin: 12px 0 6px;
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+/* Sub-questions - indented */
+.htmlEditor p.sub-question {
+  margin: 4px 0;
+}
+
+/* Instruction blocks */
+.htmlEditor p.instruction {
+  font-style: italic;
+  color: #64748B;
+  padding: 8px 12px;
+  border-left: 3px solid #CBD5E1;
+  background: rgba(241, 245, 249, 0.5);
+  margin: 8px 0 14px;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Header lines */
+.htmlEditor p.header-line {
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+}
+
+/* Options */
+.htmlEditor p.option {
+  margin: 2px 0;
+  font-size: 13px;
+}
+
+/* Mark allocation */
+.htmlEditor p.mark-allocation {
+  margin: 2px 0 8px;
 }
 
 .htmlEditor ul, .htmlEditor ol {
-  margin: 0 0 var(--space-5) var(--space-6);
+  margin: 0 0 16px 24px;
   padding: 0;
 }
 
 .htmlEditor li {
-  margin-bottom: var(--space-2);
+  margin-bottom: 4px;
   color: #334155;
   font-size: 13.5px;
+}
+
+/* Tables */
+.htmlEditor table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+}
+.htmlEditor th, .htmlEditor td {
+  padding: 8px 10px;
+  border: 1px solid #CBD5E1;
+  text-align: left;
+}
+.htmlEditor th {
+  background: #F1F5F9;
+  font-weight: 600;
 }
 
 /* Highlight blocks in edit mode on click */
