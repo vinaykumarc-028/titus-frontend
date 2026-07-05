@@ -277,6 +277,11 @@ function structuredPageToHtml(structuredPage: any): string {
       processedText = processedText.replace(/_{3,}/g, '<span style="display:inline-block;min-width:60px;border-bottom:2px solid currentColor;"> </span>');
     }
 
+    // Inline boxes
+    processedText = processedText
+      .replace(/\[BOX\]/g, '<span class="inline-box" contenteditable="false"></span>')
+      .replace(/\[CHECKBOX\]/g, '<span class="inline-checkbox" contenteditable="false"></span>');
+
     // Build badges
     const badgeConf = typeBadgeMap[blockType];
     const badge = badgeConf

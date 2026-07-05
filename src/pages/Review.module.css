@@ -513,6 +513,27 @@
   font-size: 13.5px;
 }
 
+/* Inline Boxes */
+.inline-box {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #334155;
+  background: transparent;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+
+.inline-checkbox {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1px solid #334155;
+  background: transparent;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+
 /* Shapes */
 .shape-element {
   border: 2px solid #334155;
