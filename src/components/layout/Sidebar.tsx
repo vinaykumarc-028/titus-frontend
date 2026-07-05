@@ -85,8 +85,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggleCol
     <aside className={clsx(styles.sidebar, collapsed && styles.collapsed)}>
       {/* Logo */}
       <div className={styles.logoArea}>
-        <div className={styles.logoIcon}>
-          <ScanText size={16} />
+        <div className={styles.logoIcon} style={{ background: 'transparent' }}>
+          <img src="/logo.png" alt="Logo" style={{ width: 24, height: 24, objectFit: 'contain' }} />
         </div>
         {!collapsed && (
           <div className={styles.logoText}>

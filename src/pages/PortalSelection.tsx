@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, FileText, Shield } from 'lucide-react';
+import { FileText, Shield } from 'lucide-react';
 import styles from './PortalSelection.module.css';
 
 export const PortalSelection: React.FC = () => {
@@ -9,8 +9,8 @@ export const PortalSelection: React.FC = () => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
-        <div className={styles.logo}>
-          <Box size={40} color="#FFFFFF" />
+        <div className={styles.logo} style={{ background: 'transparent' }}>
+          <img src="/logo.png" alt="Titus Logo" style={{ width: 48, height: 48, objectFit: 'contain' }} />
         </div>
         <h1 className={styles.brandTitle}>TITUS Document Intelligence</h1>
         <h2 className={styles.welcome}>Welcome Back</h2>

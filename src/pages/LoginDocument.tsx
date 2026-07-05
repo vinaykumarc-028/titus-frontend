@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, AlertCircle, ArrowLeft, FileText } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
@@ -72,8 +72,8 @@ export const LoginDocument: React.FC = () => {
     <div className={styles.loginWrapper}>
       <div className={styles.leftPane}>
         <div className={styles.brandContainer}>
-          <div className={styles.brandLogo}>
-            <FileText size={48} color="#FFFFFF" />
+          <div className={styles.brandLogo} style={{ background: 'transparent' }}>
+            <img src="/logo.png" alt="Titus Logo" style={{ width: 64, height: 64, objectFit: 'contain' }} />
           </div>
           <h1 className={styles.brandTitle}>TITUS<br/>Solutions</h1>
           <p className={styles.brandDescription}>

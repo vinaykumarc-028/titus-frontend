@@ -748,7 +748,10 @@ const ImageOrPdfPreview: React.FC<PreviewProps> = ({ src, zoom, rotation, bright
     setError(false);
 
     const token = localStorage.getItem('titus_auth_token');
-    fetch(src, {
+    const baseURL = import.meta.env.VITE_API_URL || '';
+    const fullSrc = src.startsWith('/api/') ? `${baseURL}${src}` : src;
+
+    fetch(fullSrc, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then(async r => {
@@ -821,6 +824,40 @@ const ImageOrPdfPreview: React.FC<PreviewProps> = ({ src, zoom, rotation, bright
       }}
     />
   );
+};
+
+const ThumbnailWithAuth: React.FC<{ src: string; className?: string; alt?: string; style?: React.CSSProperties }> = ({ src, className, alt, style }) => {
+  const [objectUrl, setObjectUrl] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let revoked = false;
+    const token = localStorage.getItem('titus_auth_token');
+    const baseURL = import.meta.env.VITE_API_URL || '';
+    const fullSrc = src.startsWith('/api/') ? `${baseURL}${src}` : src;
+
+    fetch(fullSrc, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(async r => {
+        if (!r.ok) return;
+        const blob = await r.blob();
+        if (!revoked) setObjectUrl(URL.createObjectURL(blob));
+      })
+      .catch(() => {});
+    return () => {
+      revoked = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [src]);
+
+  if (!objectUrl) {
+    return (
+      <div className={className} style={{ ...style, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9' }}>
+        <Loader2 size={14} className="animate-spin" />
+      </div>
+    );
+  }
+  return <img src={objectUrl} className={className} alt={alt} style={style} />;
 };
 
 export const Review: React.FC = () => {
@@ -1271,7 +1308,7 @@ export const Review: React.FC = () => {
               >
                 {isNearActive ? (
                   p.image_url ? (
-                    <img src={p.image_url} className={styles.thumbImg} alt={`Page ${p.page_number}`} />
+                    <ThumbnailWithAuth src={p.image_url} className={styles.thumbImg} alt={`Page ${p.page_number}`} />
                   ) : (
                     <div className={styles.thumbPlaceholder}>
                       <FileText size={20} />
@@ -1413,7 +1450,7 @@ export const Review: React.FC = () => {
                         pageNum={activePageNum}
                       />
                     ) : (
-                      <img
+                      <ThumbnailWithAuth
                         src={activePage.image_url}
                         className={styles.pageImage}
                         alt={`Page ${activePageNum}`}
