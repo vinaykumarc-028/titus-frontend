@@ -27,7 +27,8 @@ async function request<T>(
     headers['Content-Type'] = 'application/json';
   }
 
-  const baseURL = import.meta.env.VITE_API_URL || '';
+  const rawBaseURL = import.meta.env.VITE_API_URL || '';
+  const baseURL = rawBaseURL.endsWith('/') ? rawBaseURL.slice(0, -1) : rawBaseURL;
   const res = await fetch(`${baseURL}/api/v1${path}`, {
     method,
     headers,
