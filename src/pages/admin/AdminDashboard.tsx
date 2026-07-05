@@ -7,6 +7,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
+import { triggerToast } from '../../components/ui/ToastContainer';
 import styles from './AdminDashboard.module.css';
 
 interface Stats {
@@ -49,8 +50,10 @@ export const AdminDashboard: React.FC = () => {
           failed:       (jobs || []).filter((j: any) => j.status === 'failed').length,
         });
         setRecentJobs(sorted.slice(0, 6));
-      } catch (e) {
+      } catch (e: any) {
         console.error('Admin dashboard load error', e);
+        const apiBase = import.meta.env.VITE_API_URL || 'RELATIVE_PATH';
+        triggerToast('error', 'Fetch Error', `Failed to load dashboard. API URL: ${apiBase}. Error: ${e.message || 'Network Error'}`);
       } finally {
         setLoading(false);
       }
