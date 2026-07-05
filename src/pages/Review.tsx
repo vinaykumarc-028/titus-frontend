@@ -923,15 +923,15 @@ export const Review: React.FC = () => {
     if (!activePage) return;
 
     const structuredPage = ensureStructuredPage(activePage);
-    const html = structuredPageToHtml(structuredPage);
+    const htmlToLoad = activePage.edited_html || structuredPageToHtml(structuredPage);
 
     // Always update metrics.
-    setMetrics(analyzeHtmlConfidence(html));
+    setMetrics(analyzeHtmlConfidence(htmlToLoad));
 
-    // Only write innerHTML when we switch pages (not on every state update).
+    // Only write innerHTML when we switch pages or if the editor is unpopulated.
     const pageSwitched = editorLoadedPage.current !== activePage.page_number;
-    if (editorRef.current && (pageSwitched || !isDirty.current)) {
-      editorRef.current.innerHTML = html;
+    if (editorRef.current && (pageSwitched || !editorLoadedPage.current || (!isDirty.current && !editorRef.current.innerHTML))) {
+      editorRef.current.innerHTML = htmlToLoad;
       editorLoadedPage.current = activePage.page_number;
       isDirty.current = false;
     }
