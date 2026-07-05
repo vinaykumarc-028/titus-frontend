@@ -44,7 +44,7 @@ export const AdminDashboard: React.FC = () => {
           inactiveUsers:(users || []).filter((u: any) => !u.is_active).length,
           totalJobs:    (jobs || []).length,
           completed:    (jobs || []).filter((j: any) => j.status === 'completed').length,
-          pendingReview:(jobs || []).filter((j: any) => j.status === 'pending_review').length,
+          pendingReview:(jobs || []).filter((j: any) => j.status === 'review_pending').length,
           processing:   (jobs || []).filter((j: any) => j.status === 'processing').length,
           failed:       (jobs || []).filter((j: any) => j.status === 'failed').length,
         });
@@ -70,19 +70,19 @@ export const AdminDashboard: React.FC = () => {
   ];
 
   const STATUS_COLOR: Record<string, string> = {
-    completed:     '#16a34a',
-    pending_review:'#d97706',
-    processing:    '#0891b2',
-    failed:        '#dc2626',
-    pending:       '#6b7280',
+    completed:      '#16a34a',
+    review_pending: '#d97706',
+    processing:     '#0891b2',
+    failed:         '#dc2626',
+    pending:        '#6b7280',
   };
 
   const STATUS_LABEL: Record<string, string> = {
-    completed:     'Completed',
-    pending_review:'Review',
-    processing:    'Processing',
-    failed:        'Failed',
-    pending:       'Pending',
+    completed:      'Completed',
+    review_pending: 'Review',
+    processing:     'Processing',
+    failed:         'Failed',
+    pending:        'Pending',
   };
 
   return (

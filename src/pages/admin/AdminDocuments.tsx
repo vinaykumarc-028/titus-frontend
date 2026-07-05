@@ -24,6 +24,8 @@ export const AdminDocuments: React.FC = () => {
   const [docs, setDocs] = useState<AdminDocItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<AdminDocItem | null>(null);
 
   const loadDocs = async () => {
@@ -126,10 +128,13 @@ export const AdminDocuments: React.FC = () => {
     }
   };
 
-  const filteredDocs: AdminDocItem[] = docs.filter(d => 
-    d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.owner.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDocs: AdminDocItem[] = docs.filter(d => {
+    const matchesSearch = d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          d.owner.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !filterCategory || d.category === filterCategory;
+    const matchesStatus = !filterStatus || d.status === filterStatus;
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
 
   return (
     <div className={styles.wrapper}>
@@ -173,13 +178,21 @@ export const AdminDocuments: React.FC = () => {
                   />
                 </div>
                 <div className={styles.filterGroup}>
-                  <select className={styles.selectInput} defaultValue="">
+                  <select 
+                    className={styles.selectInput} 
+                    value={filterCategory} 
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                  >
                     <option value="">All Categories</option>
                     <option value="Question Paper">Question Paper</option>
                     <option value="Assignment">Assignment</option>
                     <option value="Lecture Notes">Lecture Notes</option>
                   </select>
-                  <select className={styles.selectInput} defaultValue="">
+                  <select 
+                    className={styles.selectInput} 
+                    value={filterStatus} 
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                  >
                     <option value="">All Statuses</option>
                     <option value="Completed">Completed</option>
                     <option value="Processing">Processing</option>
