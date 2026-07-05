@@ -966,8 +966,15 @@ export const Review: React.FC = () => {
   const handleManualSave = async () => {
     setSaveStatus('Saving...');
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    const updated = syncEditorContent();
-    await triggerSave(updated || activePage);
+    // syncEditorContent already calls triggerSave internally
+    // but we call it and await so we can show the toast after
+    const html = editorRef.current?.innerHTML || '';
+    if (!activePage) return;
+    const updatedPage = {
+      ...activePage,
+      edited_html: html,
+    };
+    await triggerSave(updatedPage);
     setSaveStatus('Saved');
     triggerToast('success', 'Changes Saved', 'Your edits were saved successfully.');
   };
@@ -1005,12 +1012,24 @@ export const Review: React.FC = () => {
     const pageToSave = pageOverride || activePage;
     if (!pageToSave) return;
     const structuredPage = pageToSave.structured_page || null;
-    const currentHtml = editorRef.current?.innerHTML || pageToSave.edited_html || '';
 
-    // Safety check: preserve elements if pageToSave.elements happens to be empty
+    // Always read HTML directly from the editor DOM - this is the source of truth.
+    // Fall back to what was passed in pageOverride (e.g. from syncEditorContent),
+    // then to anything previously saved.
+    const currentHtml =
+      editorRef.current?.innerHTML ||
+      pageToSave.edited_html ||
+      '';
+
+    // Safety check: preserve elements if empty
     const elementsToSend = (pageToSave.elements && pageToSave.elements.length > 0)
       ? pageToSave.elements
       : (activePage?.elements || []);
+
+    if (!currentHtml && elementsToSend.length === 0) {
+      // Nothing to save – skip to avoid wiping the DB
+      return;
+    }
 
     try {
       await api.put(`/jobs/${jobId}/pages/${pageToSave.page_number}`, {
@@ -1078,33 +1097,36 @@ export const Review: React.FC = () => {
 
   const syncEditorContent = (forceActivePage?: any) => {
     const page = forceActivePage || activePage;
-    if (editorRef.current && page) {
-      const html = editorRef.current.innerHTML;
-      const updatedMarkdown = htmlToMarkdown(html);
+    if (!editorRef.current || !page) return null;
 
-      // Parse HTML to blocks
-      const existingBlocks = page.structured_page?.blocks || page.elements || [];
-      const updatedBlocks = htmlToBlocks(html, existingBlocks);
+    const html = editorRef.current.innerHTML;
+    const updatedMarkdown = htmlToMarkdown(html);
 
-      // Update live metrics.
-      setMetrics(analyzeHtmlConfidence(html));
+    // Parse HTML to blocks
+    const existingBlocks = page.structured_page?.blocks || page.elements || [];
+    const updatedBlocks = htmlToBlocks(html, existingBlocks);
 
-      const updatedPage = {
-        ...page,
-        markdown: updatedMarkdown,
-        elements: updatedBlocks,
-        structured_page: {
-          ...ensureStructuredPage(page),
-          blocks: updatedBlocks
-        }
-      };
+    // Update live metrics.
+    setMetrics(analyzeHtmlConfidence(html));
 
-      setPages(prev =>
-        prev.map(p => p.page_number === page.page_number ? updatedPage : p)
-      );
+    // CRITICAL: include edited_html so it is saved and used in HTML download
+    const updatedPage = {
+      ...page,
+      markdown: updatedMarkdown,
+      elements: updatedBlocks,
+      edited_html: html,
+      structured_page: {
+        ...ensureStructuredPage(page),
+        blocks: updatedBlocks
+      }
+    };
 
-      triggerSave(updatedPage);
-    }
+    setPages(prev =>
+      prev.map(p => p.page_number === page.page_number ? updatedPage : p)
+    );
+
+    triggerSave(updatedPage);
+    return updatedPage;
   };
 
   // Debounced auto-save triggered by user input in the editor.
