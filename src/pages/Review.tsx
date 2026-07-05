@@ -1001,6 +1001,7 @@ export const Review: React.FC = () => {
           markdown: pageToSave.markdown || '',
           elements: pageToSave.elements || [],
           structured_page: structuredPage,
+          edited_html: editorRef.current?.innerHTML || '',
         });
         setSaveStatus('Saved');
         
