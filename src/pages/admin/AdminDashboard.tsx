@@ -11,6 +11,8 @@ import styles from './AdminDashboard.module.css';
 
 interface Stats {
   totalUsers: number;
+  activeUsers: number;
+  inactiveUsers: number;
   totalJobs: number;
   completed: number;
   pendingReview: number;
@@ -38,6 +40,8 @@ export const AdminDashboard: React.FC = () => {
 
         setStats({
           totalUsers:   (users || []).length,
+          activeUsers:  (users || []).filter((u: any) => u.is_active).length,
+          inactiveUsers:(users || []).filter((u: any) => !u.is_active).length,
           totalJobs:    (jobs || []).length,
           completed:    (jobs || []).filter((j: any) => j.status === 'completed').length,
           pendingReview:(jobs || []).filter((j: any) => j.status === 'pending_review').length,
@@ -56,6 +60,8 @@ export const AdminDashboard: React.FC = () => {
 
   const METRIC_CARDS = [
     { label: 'Total Users',     value: stats?.totalUsers,    icon: <Users size={18} />,        color: '#7c3aed', bg: 'rgba(124,58,237,0.1)'  },
+    { label: 'Active Users',    value: stats?.activeUsers,   icon: <Users size={18} />,        color: '#16a34a', bg: 'rgba(22,163,74,0.1)'   },
+    { label: 'Inactive Users',  value: stats?.inactiveUsers, icon: <Users size={18} />,        color: '#dc2626', bg: 'rgba(220,38,38,0.1)'   },
     { label: 'Total Jobs',      value: stats?.totalJobs,     icon: <FileText size={18} />,     color: '#2563eb', bg: 'rgba(37,99,235,0.1)'   },
     { label: 'Completed',       value: stats?.completed,     icon: <CheckCircle2 size={18} />, color: '#16a34a', bg: 'rgba(22,163,74,0.1)'   },
     { label: 'Pending Review',  value: stats?.pendingReview, icon: <Clock size={18} />,        color: '#d97706', bg: 'rgba(217,119,6,0.1)'   },
