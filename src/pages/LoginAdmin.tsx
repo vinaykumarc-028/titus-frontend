@@ -37,7 +37,7 @@ export const LoginAdmin: React.FC = () => {
 
   return (
     <div className={styles.loginWrapper}>
-      <div className={styles.leftPane} style={{ backgroundColor: 'var(--bg-purple)' }}>
+      <div className={styles.leftPane} style={{ backgroundColor: 'var(--accent-purple-dark)' }}>
         <div className={styles.brandContainer}>
           <div className={styles.brandLogo} style={{ background: 'transparent' }}>
             <img src="/logo.png" alt="Titus Logo" style={{ width: 64, height: 64, objectFit: 'contain' }} />
