@@ -286,7 +286,7 @@ function structuredPageToHtml(structuredPage: any): string {
     // Question type pill
     const qtLabel = block.question_type ? qTypeLabelMap[block.question_type] : null;
     const qtBadge = qtLabel
-      ? `<span style="display:inline-block;font-size:10px;padding:1px 5px;border-radius:10px;margin-right:6px;background:rgba(99,102,241,0.12);color:#6366f1;user-select:none;vertical-align:middle;">${qtLabel}</span>`
+      ? `<span class="qt-badge" style="display:inline-block;font-size:10px;padding:1px 5px;border-radius:10px;margin-right:6px;background:rgba(99,102,241,0.12);color:#6366f1;user-select:none;vertical-align:middle;">${qtLabel}</span>`
       : '';
 
     // Marker
@@ -456,30 +456,42 @@ function htmlToBlocks(html: string, existingBlocks: any[] = []): any[] {
     let marker = el.querySelector('.marker')?.textContent || existing?.marker || null;
     let marks = el.querySelector('.marks')?.textContent || existing?.marks?.raw || existing?.marks || null;
     
+    // Extract text safely by removing all non-editable UI elements first
+    const clone = el.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll('.marker, .marks, .el-type-badge, .qt-badge').forEach(n => n.remove());
+    const cleanText = clone.textContent || '';
+    
     if (tagName === 'H1') {
       type = 'section';
-      text = el.textContent || '';
+      text = cleanText;
     } else if (tagName === 'H2') {
       type = 'subsection';
-      text = el.textContent || '';
+      text = cleanText;
     } else if (tagName === 'H3') {
       type = 'heading';
-      text = el.textContent || '';
+      text = cleanText;
     } else if (tagName === 'P') {
       if (el.classList.contains('instruction')) {
         type = 'instruction';
-        text = el.textContent || '';
+        text = cleanText;
+      } else if (el.classList.contains('option')) {
+        type = 'option';
+        text = cleanText;
+      } else if (el.classList.contains('mark-allocation')) {
+        type = 'mark_allocation';
+        text = cleanText;
+      } else if (el.classList.contains('sub-question')) {
+        type = 'sub_question';
+        text = cleanText;
+      } else if (el.classList.contains('footer-line')) {
+        type = 'footer';
+        text = cleanText;
+      } else if (el.classList.contains('header-line')) {
+        type = 'header';
+        text = cleanText;
       } else {
-        type = 'question';
-        // Extract content excluding marker and marks if they exist
-        const spanEl = el.querySelector(':scope > span:not(.marker):not(.marks)');
-        if (spanEl) {
-          text = spanEl.textContent || '';
-        } else {
-          const clone = el.cloneNode(true) as HTMLElement;
-          clone.querySelectorAll('.marker, .marks').forEach(n => n.remove());
-          text = clone.textContent || '';
-        }
+        type = existing?.type || 'question';
+        text = cleanText;
       }
     } else if (tagName === 'TABLE') {
       if (el.classList.contains('match-table')) {
