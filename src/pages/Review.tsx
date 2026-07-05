@@ -248,9 +248,16 @@ function structuredPageToHtml(structuredPage: any): string {
       return;
     }
 
+    // Clean marker from text to avoid duplication
+    let rawText = block.text || '';
+    const mStr = (block.marker || '').trim();
+    if (mStr && rawText.trim().startsWith(mStr)) {
+      rawText = rawText.trim().substring(mStr.length).trim();
+    }
+
     // Process text with confidence span protection
     const confidenceSpans: string[] = [];
-    let processedText = (block.text || '').replace(
+    let processedText = rawText.replace(
       /<span\s+class=["']low-confidence["']\s+data-confidence=["'](\d+)["']>(.*?)<\/span>/gi,
       (_match: string, conf: string, text: string) => {
         confidenceSpans.push(`<span class="low-confidence-highlight" style="border-bottom:2px dashed #f59e0b;background-color:rgba(245,158,11,0.08);cursor:help;" title="Confidence: ${conf}%" data-confidence="${conf}">${text}</span>`);
@@ -298,9 +305,16 @@ function structuredPageToHtml(structuredPage: any): string {
     const marker = block.marker ? `<span class="marker" style="font-weight:700;margin-right:6px;color:var(--text-primary);">${block.marker}</span>` : '';
 
     // Marks allocation
-    const marksRaw = block.marks?.raw || null;
-    const marksHtml = marksRaw
-      ? `<span class="marks" style="float:right;font-size:11px;font-weight:600;color:var(--accent);background:rgba(59,130,246,0.1);padding:2px 6px;border-radius:4px;margin-left:8px;">[${marksRaw}]</span>`
+    const marksRaw = block.marks?.raw || (typeof block.marks === 'string' ? block.marks : null);
+    let cleanMarks = marksRaw ? marksRaw.trim() : '';
+    while (cleanMarks.startsWith('[') && cleanMarks.endsWith(']')) {
+      cleanMarks = cleanMarks.slice(1, -1).trim();
+    }
+    while (cleanMarks.startsWith('(') && cleanMarks.endsWith(')')) {
+      cleanMarks = cleanMarks.slice(1, -1).trim();
+    }
+    const marksHtml = cleanMarks
+      ? `<span class="marks" style="float:right;font-size:11px;font-weight:600;color:var(--accent);background:rgba(59,130,246,0.1);padding:2px 6px;border-radius:4px;margin-left:8px;">[${cleanMarks}]</span>`
       : '';
 
     // Hierarchy indentation
@@ -447,6 +461,49 @@ function htmlToMarkdown(html: string): string {
   // Normalize consecutive newlines
   md = md.replace(/\n{3,}/g, '\n\n');
   return md.trim();
+}
+
+function cleanLoadedHtml(html: string): string {
+  if (!html) return '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  const questions = doc.querySelectorAll('p.question');
+  questions.forEach((q) => {
+    const markerEl = q.querySelector('.marker');
+    const marksEl = q.querySelector('.marks');
+
+    if (markerEl) {
+      const markerText = (markerEl.textContent || '').trim();
+      if (markerText) {
+        const textSpan = q.querySelector('span:not(.marker):not(.marks):not(.el-type-badge):not(.qt-badge)');
+        if (textSpan) {
+          const spanText = textSpan.textContent || '';
+          if (spanText.trim().startsWith(markerText)) {
+            const cleanText = spanText.trim().substring(markerText.length).trim();
+            textSpan.textContent = cleanText;
+          }
+        }
+      }
+    }
+
+    if (marksEl) {
+      let marksText = (marksEl.textContent || '').trim();
+      while (marksText.startsWith('[') && marksText.endsWith(']')) {
+        marksText = marksText.slice(1, -1).trim();
+      }
+      while (marksText.startsWith('(') && marksText.endsWith(')')) {
+        marksText = marksText.slice(1, -1).trim();
+      }
+      if (marksText) {
+        marksEl.textContent = `[${marksText}]`;
+      } else {
+        marksEl.remove();
+      }
+    }
+  });
+
+  return doc.body.innerHTML;
 }
 
 function htmlToBlocks(html: string, existingBlocks: any[] = []): any[] {
@@ -923,7 +980,8 @@ export const Review: React.FC = () => {
     if (!activePage) return;
 
     const structuredPage = ensureStructuredPage(activePage);
-    const htmlToLoad = activePage.edited_html || structuredPageToHtml(structuredPage);
+    const rawHtml = activePage.edited_html || structuredPageToHtml(structuredPage);
+    const htmlToLoad = cleanLoadedHtml(rawHtml);
 
     // Always update metrics.
     setMetrics(analyzeHtmlConfidence(htmlToLoad));
