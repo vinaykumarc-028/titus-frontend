@@ -9,8 +9,8 @@ export const PortalSelection: React.FC = () => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
-        <div className={styles.logo} style={{ background: 'transparent' }}>
-          <img src="/logo.png" alt="Titus Logo" style={{ width: 48, height: 48, objectFit: 'contain' }} />
+        <div className={styles.logo} style={{ background: 'transparent', padding: 0 }}>
+          <img src="/logo.png" alt="Titus Logo" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.25))' }} />
         </div>
         <h1 className={styles.brandTitle}>TITUS Document Intelligence</h1>
         <h2 className={styles.welcome}>Welcome Back</h2>
