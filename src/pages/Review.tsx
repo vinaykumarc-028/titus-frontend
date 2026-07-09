@@ -172,13 +172,58 @@ function markdownToHtml(md: string): string {
   return result.join('\n');
 }
 
-function structuredPageToHtml(structuredPage: any): string {
-  if (!structuredPage || !structuredPage.blocks) return '';
-  const blocks = structuredPage.blocks;
+function blockToHtml(block: any): string {
+  const blockType = block.type || 'question';
   
-  const result: string[] = [];
+  if (blockType === 'page_break') {
+    return `<div class="explicit-page-break" data-block-id="${block.id}" style="page-break-after:always;break-after:page;border-top:1px dashed var(--border);margin:24px 0;text-align:center;color:var(--text-muted);font-size:11px;user-select:none;" contenteditable="false">--- Print Page Break ---</div>`;
+  }
+  
+  if (blockType === 'match_row') {
+    return `<tr data-block-id="${block.id}"><td style="padding:6px 10px;border:1px solid var(--border);">${block.match_column_a || block.text || ''}</td><td style="padding:6px 10px;border:1px solid var(--border);">${block.match_column_b || ''}</td></tr>`;
+  }
 
-  // Badge configs for element types
+  // Clean marker from text to avoid duplication
+  let rawText = block.text || '';
+  const mStr = (block.marker || '').trim();
+  if (mStr && rawText.trim().startsWith(mStr)) {
+    rawText = rawText.trim().substring(mStr.length).trim();
+  }
+
+  // Process text with confidence span protection
+  const confidenceSpans: string[] = [];
+  let processedText = rawText.replace(
+    /<span\s+class=["']low-confidence["']\s+data-confidence=["'](\d+)["']>(.*?)<\/span>/gi,
+    (_match: string, conf: string, text: string) => {
+      confidenceSpans.push(`<span class="low-confidence-highlight" style="border-bottom:2px dashed #f59e0b;background-color:rgba(245,158,11,0.08);cursor:help;" title="Confidence: ${conf}%" data-confidence="${conf}">${text}</span>`);
+      return `__CONF_SPAN_${confidenceSpans.length - 1}__`;
+    }
+  );
+
+  // Escape HTML
+  processedText = processedText
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Restore spans
+  processedText = processedText.replace(/__CONF_SPAN_(\d+)__/g, (_match: string, idx: string) => confidenceSpans[Number(idx)]);
+
+  // Inline markdown
+  processedText = processedText
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+  // Fill-blank underscores → styled blanks
+  if (block.has_fill_blank) {
+    processedText = processedText.replace(/_{3,}/g, '<span style="display:inline-block;min-width:60px;border-bottom:2px solid currentColor;"> </span>');
+  }
+
+  // Inline boxes
+  processedText = processedText
+    .replace(/\[BOX\]/g, '<span class="inline-box" contenteditable="false"></span>')
+    .replace(/\[CHECKBOX\]/g, '<span class="inline-checkbox" contenteditable="false"></span>');
+
   const typeBadgeMap: Record<string, { label: string; color: string }> = {
     question:           { label: 'Q',         color: '#3b82f6' },
     sub_question:       { label: 'Sub-Q',     color: '#6366f1' },
@@ -196,7 +241,6 @@ function structuredPageToHtml(structuredPage: any): string {
     page_break:         { label: 'Page Brk',  color: '#6b7280' },
   };
 
-  // Question type labels
   const qTypeLabelMap: Record<string, string> = {
     fill_blank:           '✏️ Fill Blank',
     true_false:           '✅ T/F',
@@ -210,6 +254,93 @@ function structuredPageToHtml(structuredPage: any): string {
     long_answer:          '📝 Long',
     short_answer:         '📝 Short',
   };
+
+  // Build badges
+  const badgeConf = typeBadgeMap[blockType];
+  const badge = badgeConf
+    ? `<span class="el-type-badge" style="display:inline-block;font-size:10px;font-weight:600;padding:1px 5px;border-radius:3px;margin-right:6px;background:${badgeConf.color}22;color:${badgeConf.color};border:1px solid ${badgeConf.color}44;user-select:none;vertical-align:middle;">${badgeConf.label}</span>`
+    : '';
+
+  // Question type pill
+  const qtLabel = block.question_type ? qTypeLabelMap[block.question_type] : null;
+  const qtBadge = qtLabel
+    ? `<span class="qt-badge" style="display:inline-block;font-size:10px;padding:1px 5px;border-radius:10px;margin-right:6px;background:rgba(99,102,241,0.12);color:#6366f1;user-select:none;vertical-align:middle;">${qtLabel}</span>`
+    : '';
+
+  // Marker
+  const marker = block.marker ? `<span class="marker" style="font-weight:700;margin-right:6px;color:var(--text-primary);">${block.marker}</span>` : '';
+
+  // Marks allocation
+  const marksRaw = block.marks?.raw || (typeof block.marks === 'string' ? block.marks : null);
+  let cleanMarks = marksRaw ? marksRaw.trim() : '';
+  while (cleanMarks.startsWith('[') && cleanMarks.endsWith(']')) {
+    cleanMarks = cleanMarks.slice(1, -1).trim();
+  }
+  while (cleanMarks.startsWith('(') && cleanMarks.endsWith(')')) {
+    cleanMarks = cleanMarks.slice(1, -1).trim();
+  }
+  const marksHtml = cleanMarks
+    ? `<span class="marks" style="float:right;font-size:11px;font-weight:600;color:var(--accent);background:rgba(59,130,246,0.1);padding:2px 6px;border-radius:4px;margin-left:8px;">[${cleanMarks}]</span>`
+    : '';
+
+  const level = block.hierarchy_level || 0;
+  const indent = level > 0 ? `padding-left: ${level * 24}px;` : '';
+
+  if (blockType === 'section') {
+    return `<h1 data-block-id="${block.id}">${badge}${processedText}</h1>`;
+  } else if (blockType === 'subsection') {
+    return `<h2 data-block-id="${block.id}">${badge}${processedText}</h2>`;
+  } else if (blockType === 'header') {
+    return `<p class="header-line" data-block-id="${block.id}" style="font-weight:600;border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:4px;">${badge}${processedText}</p>`;
+  } else if (blockType === 'footer') {
+    return `<p class="footer-line" data-block-id="${block.id}" style="font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:4px;">${badge}${processedText}</p>`;
+  } else if (blockType === 'instruction') {
+    return `<p class="instruction" data-block-id="${block.id}" style="font-style:italic;color:var(--text-muted);${indent}">${badge}${processedText}</p>`;
+  } else if (blockType === 'question' || blockType === 'question_group') {
+    return `<p class="question" data-block-id="${block.id}" style="${indent}">${marksHtml}${badge}${qtBadge}${marker}<span>${processedText}</span></p>`;
+  } else if (blockType === 'sub_question') {
+    return `<p class="question sub-question" data-block-id="${block.id}" style="${indent}">${marksHtml}${badge}${qtBadge}${marker}<span>${processedText}</span></p>`;
+  } else if (blockType === 'option') {
+    return `<p class="option" data-block-id="${block.id}" style="${indent || 'padding-left:24px;'}">${badge}${marker}<span>${processedText}</span></p>`;
+  } else if (blockType === 'mark_allocation') {
+    return `<p class="mark-allocation" data-block-id="${block.id}" style="text-align:right;font-size:12px;font-weight:600;color:var(--accent);">${badge}${processedText}</p>`;
+  } else if (blockType === 'table' && block.table?.rows) {
+    let tableHtml = `<table border="1" data-block-id="${block.id}" style="width:100%;border-collapse:collapse;margin:12px 0;">`;
+    block.table.rows.forEach((row: any, rowIdx: number) => {
+      tableHtml += '<tr>';
+      (row.cells || []).forEach((cell: any) => {
+        const tag = cell.header || rowIdx === 0 ? 'th' : 'td';
+        tableHtml += `<${tag} style="padding:8px;border:1px solid var(--border);">${cell.text || ''}</${tag}>`;
+      });
+      tableHtml += '</tr>';
+    });
+    tableHtml += '</table>';
+    return tableHtml;
+  } else if (blockType === 'match_following' && block.match_pairs) {
+    let tableHtml = `<table class="match-table" data-block-id="${block.id}" style="width:100%;border-collapse:collapse;margin:12px 0;"><tbody>`;
+    block.match_pairs.forEach((pair: any) => {
+      tableHtml += `<tr><td style="padding:8px;border:1px solid var(--border);">${pair.left||''}</td><td style="padding:8px;border:1px solid var(--border);">${pair.right||''}</td></tr>`;
+    });
+    tableHtml += '</tbody></table>';
+    return tableHtml;
+  } else if (blockType === 'shape') {
+    const shapeType = (block.content || block.text || '').toLowerCase();
+    const shapeSize = (block.size || 'medium').toLowerCase();
+    const shapeClassType = shapeType === 'box' ? 'rectangle' : shapeType;
+    return `<div class="shape-container" data-block-id="${block.id}" style="margin:16px 0;display:flex;justify-content:center;">
+      <div class="shape-element shape-type-${shapeClassType} shape-size-${shapeSize}" title="${shapeType} (${shapeSize})" contenteditable="false"></div>
+    </div>`;
+  }
+
+  // Default fallback (paragraph)
+  return `<p data-block-id="${block.id}" style="${indent}">${badge}${processedText}</p>`;
+}
+
+function structuredPageToHtml(structuredPage: any): string {
+  if (!structuredPage || !structuredPage.blocks) return '';
+  const blocks = structuredPage.blocks;
+  
+  const result: string[] = [];
 
   let inMatchTable = false;
   let matchTableRows: [string, string][] = [];
@@ -235,140 +366,14 @@ function structuredPageToHtml(structuredPage: any): string {
       flushMatchTable();
     }
 
-    // ── Page break ──────────────────────────────────────
-    if (blockType === 'page_break') {
-      result.push(`<div class="explicit-page-break" data-block-id="${block.id}" style="page-break-after:always;break-after:page;border-top:1px dashed var(--border);margin:24px 0;text-align:center;color:var(--text-muted);font-size:11px;user-select:none;" contenteditable="false">--- Print Page Break ---</div>`);
-      return;
-    }
-
-    // ── Match rows → accumulate into a table ───────────
+    // Match rows → accumulate into a table
     if (blockType === 'match_row') {
       inMatchTable = true;
       matchTableRows.push([block.match_column_a || block.text || '', block.match_column_b || '']);
       return;
     }
 
-    // Clean marker from text to avoid duplication
-    let rawText = block.text || '';
-    const mStr = (block.marker || '').trim();
-    if (mStr && rawText.trim().startsWith(mStr)) {
-      rawText = rawText.trim().substring(mStr.length).trim();
-    }
-
-    // Process text with confidence span protection
-    const confidenceSpans: string[] = [];
-    let processedText = rawText.replace(
-      /<span\s+class=["']low-confidence["']\s+data-confidence=["'](\d+)["']>(.*?)<\/span>/gi,
-      (_match: string, conf: string, text: string) => {
-        confidenceSpans.push(`<span class="low-confidence-highlight" style="border-bottom:2px dashed #f59e0b;background-color:rgba(245,158,11,0.08);cursor:help;" title="Confidence: ${conf}%" data-confidence="${conf}">${text}</span>`);
-        return `__CONF_SPAN_${confidenceSpans.length - 1}__`;
-      }
-    );
-
-    // Escape HTML
-    processedText = processedText
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    // Restore spans
-    processedText = processedText.replace(/__CONF_SPAN_(\d+)__/g, (_match: string, idx: string) => confidenceSpans[Number(idx)]);
-
-    // Inline markdown
-    processedText = processedText
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-    // Fill-blank underscores → styled blanks
-    if (block.has_fill_blank) {
-      processedText = processedText.replace(/_{3,}/g, '<span style="display:inline-block;min-width:60px;border-bottom:2px solid currentColor;"> </span>');
-    }
-
-    // Inline boxes
-    processedText = processedText
-      .replace(/\[BOX\]/g, '<span class="inline-box" contenteditable="false"></span>')
-      .replace(/\[CHECKBOX\]/g, '<span class="inline-checkbox" contenteditable="false"></span>');
-
-    // Build badges
-    const badgeConf = typeBadgeMap[blockType];
-    const badge = badgeConf
-      ? `<span class="el-type-badge" style="display:inline-block;font-size:10px;font-weight:600;padding:1px 5px;border-radius:3px;margin-right:6px;background:${badgeConf.color}22;color:${badgeConf.color};border:1px solid ${badgeConf.color}44;user-select:none;vertical-align:middle;">${badgeConf.label}</span>`
-      : '';
-
-    // Question type pill
-    const qtLabel = block.question_type ? qTypeLabelMap[block.question_type] : null;
-    const qtBadge = qtLabel
-      ? `<span class="qt-badge" style="display:inline-block;font-size:10px;padding:1px 5px;border-radius:10px;margin-right:6px;background:rgba(99,102,241,0.12);color:#6366f1;user-select:none;vertical-align:middle;">${qtLabel}</span>`
-      : '';
-
-    // Marker
-    const marker = block.marker ? `<span class="marker" style="font-weight:700;margin-right:6px;color:var(--text-primary);">${block.marker}</span>` : '';
-
-    // Marks allocation
-    const marksRaw = block.marks?.raw || (typeof block.marks === 'string' ? block.marks : null);
-    let cleanMarks = marksRaw ? marksRaw.trim() : '';
-    while (cleanMarks.startsWith('[') && cleanMarks.endsWith(']')) {
-      cleanMarks = cleanMarks.slice(1, -1).trim();
-    }
-    while (cleanMarks.startsWith('(') && cleanMarks.endsWith(')')) {
-      cleanMarks = cleanMarks.slice(1, -1).trim();
-    }
-    const marksHtml = cleanMarks
-      ? `<span class="marks" style="float:right;font-size:11px;font-weight:600;color:var(--accent);background:rgba(59,130,246,0.1);padding:2px 6px;border-radius:4px;margin-left:8px;">[${cleanMarks}]</span>`
-      : '';
-
-    // Hierarchy indentation
-    const level = block.hierarchy_level || 0;
-    const indent = level > 0 ? `padding-left: ${level * 24}px;` : '';
-
-    // ── Render by type ──────────────────────────────────
-    if (blockType === 'section') {
-      result.push(`<h1 data-block-id="${block.id}">${badge}${processedText}</h1>`);
-    } else if (blockType === 'subsection') {
-      result.push(`<h2 data-block-id="${block.id}">${badge}${processedText}</h2>`);
-    } else if (blockType === 'header') {
-      result.push(`<p class="header-line" data-block-id="${block.id}" style="font-weight:600;border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:4px;">${badge}${processedText}</p>`);
-    } else if (blockType === 'footer') {
-      result.push(`<p class="footer-line" data-block-id="${block.id}" style="font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:4px;">${badge}${processedText}</p>`);
-    } else if (blockType === 'instruction') {
-      result.push(`<p class="instruction" data-block-id="${block.id}" style="font-style:italic;color:var(--text-muted);${indent}">${badge}${processedText}</p>`);
-    } else if (blockType === 'question' || blockType === 'question_group') {
-      result.push(`<p class="question" data-block-id="${block.id}" style="${indent}">${marksHtml}${badge}${qtBadge}${marker}<span>${processedText}</span></p>`);
-    } else if (blockType === 'sub_question') {
-      result.push(`<p class="question sub-question" data-block-id="${block.id}" style="${indent}">${marksHtml}${badge}${qtBadge}${marker}<span>${processedText}</span></p>`);
-    } else if (blockType === 'option') {
-      result.push(`<p class="option" data-block-id="${block.id}" style="${indent || 'padding-left:24px;'}">${badge}${marker}<span>${processedText}</span></p>`);
-    } else if (blockType === 'mark_allocation') {
-      result.push(`<p class="mark-allocation" data-block-id="${block.id}" style="text-align:right;font-size:12px;font-weight:600;color:var(--accent);">${badge}${processedText}</p>`);
-    } else if (blockType === 'table' && block.table?.rows) {
-      let tableHtml = `<table border="1" data-block-id="${block.id}" style="width:100%;border-collapse:collapse;margin:12px 0;">`;
-      block.table.rows.forEach((row: any, rowIdx: number) => {
-        tableHtml += '<tr>';
-        (row.cells || []).forEach((cell: any) => {
-          const tag = cell.header || rowIdx === 0 ? 'th' : 'td';
-          tableHtml += `<${tag} style="padding:8px;border:1px solid var(--border);">${cell.text || ''}</${tag}>`;
-        });
-        tableHtml += '</tr>';
-      });
-      tableHtml += '</table>';
-      result.push(tableHtml);
-    } else if (blockType === 'match_following' && block.match_pairs) {
-      let tableHtml = `<table class="match-table" data-block-id="${block.id}" style="width:100%;border-collapse:collapse;margin:12px 0;"><tbody>`;
-      block.match_pairs.forEach((pair: any) => {
-        tableHtml += `<tr><td style="padding:8px;border:1px solid var(--border);">${pair.left||''}</td><td style="padding:8px;border:1px solid var(--border);">${pair.right||''}</td></tr>`;
-      });
-      tableHtml += '</tbody></table>';
-      result.push(tableHtml);
-    } else if (blockType === 'shape') {
-      const shapeType = (block.content || block.text || '').toLowerCase();
-      const shapeSize = (block.size || 'medium').toLowerCase();
-      const shapeClassType = shapeType === 'box' ? 'rectangle' : shapeType;
-      result.push(`<div class="shape-container" data-block-id="${block.id}" style="margin:16px 0;display:flex;justify-content:center;">
-        <div class="shape-element shape-type-${shapeClassType} shape-size-${shapeSize}" title="${shapeType} (${shapeSize})" contenteditable="false"></div>
-      </div>`);
-    } else {
-      result.push(`<p data-block-id="${block.id}" style="${indent}">${badge}${processedText}</p>`);
-    }
+    result.push(blockToHtml(block));
   });
 
   // Flush any remaining match table
@@ -1124,9 +1129,11 @@ export const Review: React.FC = () => {
   const updateModelBlock = (blockId: string | null | undefined, patch: Record<string, any>) => {
     if (!activePage || !blockId) return;
     const structuredPage = ensureStructuredPage(activePage);
+    let updatedBlock: any = null;
     const updatedBlocks = (structuredPage.blocks || []).map((block: any) => {
       if (block.id !== blockId) return block;
-      return { ...block, ...patch };
+      updatedBlock = { ...block, ...patch };
+      return updatedBlock;
     });
     const updatedElements = (activePage.elements || []).map((element: any) => {
       if (element.id !== blockId) return element;
@@ -1140,9 +1147,21 @@ export const Review: React.FC = () => {
       }
       return next;
     });
+
+    let currentHtml = activePage.edited_html || '';
+    if (editorRef.current && updatedBlock) {
+      const domEl = editorRef.current.querySelector(`[data-block-id="${blockId}"]`);
+      if (domEl) {
+        const newHtml = blockToHtml(updatedBlock);
+        domEl.outerHTML = newHtml;
+        currentHtml = editorRef.current.innerHTML;
+      }
+    }
+
     const updatedPage = {
       ...activePage,
       elements: updatedElements,
+      edited_html: currentHtml || activePage.edited_html || '',
       structured_page: {
         ...structuredPage,
         blocks: updatedBlocks,
