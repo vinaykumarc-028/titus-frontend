@@ -1026,7 +1026,9 @@ export const Review: React.FC = () => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     // syncEditorContent already calls triggerSave internally
     // but we call it and await so we can show the toast after
-    const html = editorRef.current?.innerHTML || '';
+    const rawHtml = editorRef.current?.innerHTML || '';
+    // Clean before saving: strip doubled markers and double-bracketed marks
+    const html = cleanLoadedHtml(rawHtml);
     if (!activePage) return;
     const updatedPage = {
       ...activePage,
@@ -1158,21 +1160,23 @@ export const Review: React.FC = () => {
     if (!editorRef.current || !page) return null;
 
     const html = editorRef.current.innerHTML;
-    const updatedMarkdown = htmlToMarkdown(html);
+    // Clean before saving: strip doubled markers ("7. 7. ...") and double brackets ("[[x]]") 
+    const cleanedHtml = cleanLoadedHtml(html);
+    const updatedMarkdown = htmlToMarkdown(cleanedHtml);
 
     // Parse HTML to blocks
     const existingBlocks = page.structured_page?.blocks || page.elements || [];
-    const updatedBlocks = htmlToBlocks(html, existingBlocks);
+    const updatedBlocks = htmlToBlocks(cleanedHtml, existingBlocks);
 
     // Update live metrics.
-    setMetrics(analyzeHtmlConfidence(html));
+    setMetrics(analyzeHtmlConfidence(cleanedHtml));
 
     // CRITICAL: include edited_html so it is saved and used in HTML download
     const updatedPage = {
       ...page,
       markdown: updatedMarkdown,
       elements: updatedBlocks,
-      edited_html: html,
+      edited_html: cleanedHtml,
       structured_page: {
         ...ensureStructuredPage(page),
         blocks: updatedBlocks
