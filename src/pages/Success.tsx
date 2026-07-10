@@ -21,6 +21,7 @@ export const Success: React.FC = () => {
   const navigate = useNavigate();
   const [aiState, setAiState] = useState<'idle' | 'generating' | 'completed'>('idle');
   const [downloadStatus, setDownloadStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [exportFormat, setExportFormat] = useState<'html' | 'docx' | 'pdf'>('html');
   const [job, setJob] = useState<any>(null);
   const jobId = localStorage.getItem('active_job_id');
 
@@ -60,12 +61,12 @@ export const Success: React.FC = () => {
       return;
     }
     setDownloadStatus('loading');
-    triggerToast('info', 'Download Started', 'Preparing HTML document...');
+    triggerToast('info', 'Download Started', `Preparing ${exportFormat.toUpperCase()} document...`);
 
     try {
       const token = localStorage.getItem('titus_auth_token');
       const API_BASE = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/download?include_answers=${includeAI}`, {
+      const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/download?include_answers=${includeAI}&format=${exportFormat}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -77,15 +78,16 @@ export const Success: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       const suffix = includeAI ? '_with_answers' : '';
+      const ext = exportFormat === 'docx' ? 'docx' : exportFormat === 'pdf' ? 'pdf' : 'html';
       a.href = url;
-      a.download = `${documentName.replace(/\s+/g, '_')}${suffix}.html`;
+      a.download = `${documentName.replace(/\s+/g, '_')}${suffix}.${ext}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
       setDownloadStatus('success');
-      triggerToast('success', 'Downloaded', `HTML document${includeAI ? ' with answer key' : ''} saved.`);
+      triggerToast('success', 'Downloaded', `${exportFormat.toUpperCase()} document${includeAI ? ' with answer key' : ''} saved.`);
     } catch (err: any) {
       setDownloadStatus('idle');
       triggerToast('error', 'Download Error', err.message || 'Failed to download.');
@@ -98,6 +100,7 @@ export const Success: React.FC = () => {
 
   const documentName = job?.name || job?.metadata?.title || 'Reviewed examination document';
   const pageCount = job?.pages_count || job?.pages?.length || 0;
+
 
   return (
     <div className={styles.container}>
@@ -150,6 +153,31 @@ export const Success: React.FC = () => {
         <p className={styles.downloadCardDesc}>
           Your structured question paper has been generated successfully. You can download it now or generate an AI Answer Key.
         </p>
+
+        {/* Format Selection Dropdown */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: 'var(--space-16)', width: '240px' }}>
+          <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>Format:</span>
+          <select 
+            value={exportFormat} 
+            onChange={(e) => setExportFormat(e.target.value as any)}
+            style={{
+              flex: 1,
+              padding: '6px 10px',
+              borderRadius: 'var(--radius-input)',
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--bg-card)',
+              color: 'var(--text-primary)',
+              fontSize: '13px',
+              fontWeight: 600,
+              outline: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="html">HTML Document</option>
+            <option value="docx">Word Document (.docx)</option>
+            <option value="pdf">PDF Document (.pdf)</option>
+          </select>
+        </div>
         
         {downloadStatus === 'idle' && (
           <Button 
@@ -159,7 +187,7 @@ export const Success: React.FC = () => {
             onClick={() => handleDownload(false)}
             style={{ width: '240px', height: '48px' }}
           >
-            Download HTML Document
+            {exportFormat === 'docx' ? 'Download Word Document' : exportFormat === 'pdf' ? 'Download PDF Document' : 'Download HTML Document'}
           </Button>
         )}
         {downloadStatus === 'loading' && (
