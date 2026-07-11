@@ -21,7 +21,7 @@ export const Success: React.FC = () => {
   const navigate = useNavigate();
   const [aiState, setAiState] = useState<'idle' | 'generating' | 'completed'>('idle');
   const [downloadStatus, setDownloadStatus] = useState<'idle' | 'loading' | 'success'>('idle');
-  const [exportFormat, setExportFormat] = useState<'html' | 'docx' | 'pdf'>('html');
+  const [exportFormat, setExportFormat] = useState<'html' | 'docx' | 'pdf' | 'json' | 'css'>('html');
   const [job, setJob] = useState<any>(null);
   const jobId = localStorage.getItem('active_job_id');
 
@@ -176,6 +176,8 @@ export const Success: React.FC = () => {
             <option value="html">HTML Document</option>
             <option value="docx">Word Document (.docx)</option>
             <option value="pdf">PDF Document (.pdf)</option>
+            <option value="json">Structured JSON Data</option>
+            <option value="css">Styles Sheet (.css)</option>
           </select>
         </div>
         
@@ -187,7 +189,11 @@ export const Success: React.FC = () => {
             onClick={() => handleDownload(false)}
             style={{ width: '240px', height: '48px' }}
           >
-            {exportFormat === 'docx' ? 'Download Word Document' : exportFormat === 'pdf' ? 'Download PDF Document' : 'Download HTML Document'}
+            {exportFormat === 'docx' ? 'Download Word Document' : 
+             exportFormat === 'pdf' ? 'Download PDF Document' : 
+             exportFormat === 'json' ? 'Download JSON Data' : 
+             exportFormat === 'css' ? 'Download CSS Styles' : 
+             'Download HTML Document'}
           </Button>
         )}
         {downloadStatus === 'loading' && (
