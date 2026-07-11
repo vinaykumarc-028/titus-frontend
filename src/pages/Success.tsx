@@ -22,6 +22,7 @@ export const Success: React.FC = () => {
   const [aiState, setAiState] = useState<'idle' | 'generating' | 'completed'>('idle');
   const [downloadStatus, setDownloadStatus] = useState<'idle' | 'loading' | 'success'>('idle');
   const [exportFormat, setExportFormat] = useState<'html' | 'docx' | 'pdf' | 'json' | 'css'>('html');
+  const [useV2, setUseV2] = useState<boolean>(false);
   const [job, setJob] = useState<any>(null);
   const jobId = localStorage.getItem('active_job_id');
 
@@ -66,7 +67,7 @@ export const Success: React.FC = () => {
     try {
       const token = localStorage.getItem('titus_auth_token');
       const API_BASE = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/download?include_answers=${includeAI}&format=${exportFormat}`, {
+      const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/download?include_answers=${includeAI}&format=${exportFormat}&renderer=${useV2 ? 'v2' : 'v1'}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -179,6 +180,20 @@ export const Success: React.FC = () => {
             <option value="json">Structured JSON Data</option>
             <option value="css">Styles Sheet (.css)</option>
           </select>
+        </div>
+
+        {/* Renderer V2 Toggle */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: 'var(--space-16)', width: '240px' }}>
+          <input 
+            type="checkbox" 
+            id="use-v2-checkbox"
+            checked={useV2} 
+            onChange={(e) => setUseV2(e.target.checked)}
+            style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+          />
+          <label htmlFor="use-v2-checkbox" style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500, cursor: 'pointer' }}>
+            Use Renderer V2 (Beta)
+          </label>
         </div>
         
         {downloadStatus === 'idle' && (
